@@ -7,8 +7,13 @@
     </div> -->
 
     <div id="editor—wrapper">
+      <div class="toolbar">
+        <button @click="clearContent">清空</button>
+        <button @click="undo">撤销</button>
+        <button @click="redo">重做</button>
+      </div>
       <div ref="toolbarRef"><!-- 工具栏 --></div>
-      <div ref="editorRef" class="editor-wrapper" type="text" />
+      <div ref="editorRef" class="editor-wrapper" />
     </div>
 
   </div>
@@ -72,12 +77,30 @@ let toolbar = null
 // createEditor下这种方案并不可行，不能用v-model绑定
 // const valueHtml = ref('初始化完成...')
 
+
+// 外面也可以调api
+function clearContent() {
+  if (editor == null) return
+  editor.clear()
+}
+
+function undo() {
+  if (editor == null) return
+  editor.undo()
+}
+
+function redo() {
+  if (editor == null) return
+  editor.redo()
+}
+
 onMounted(() => {
 
   const editorConfig = {
     placeholder: 'Type here...',
     onChange(editor) {
       console.log('editor.getText()', editor.getText())
+      // 这里就可以调api
     }
   }
 
@@ -104,6 +127,8 @@ onMounted(() => {
 // 假设后端返回html内容
 onMounted(() => {
   setTimeout(() => {
+    // 做边界处理，防止获取不到dom
+    if (editor == null) return
     editor.setHtml('<p>this is ajax content</p>')
   }, 3000)
 })
