@@ -10,7 +10,6 @@
       <div class="toolbar">
         <button @click="clearContent">清空</button>
         <button @click="undo">撤销</button>
-        <button @click="redo">重做</button>
       </div>
       <div ref="toolbarRef"><!-- 工具栏 --></div>
       <div ref="editorRef" class="editor-wrapper" />
@@ -89,11 +88,6 @@ function undo() {
   editor.undo()
 }
 
-function redo() {
-  if (editor == null) return
-  editor.redo()
-}
-
 onMounted(() => {
 
   const editorConfig = {
@@ -121,17 +115,16 @@ onMounted(() => {
     mode: mode.value, // or 'simple'
   })
 
-})
-
-// 模拟 ajax 异步获取内容
-// 假设后端返回html内容
-onMounted(() => {
+  // 模拟 ajax 异步获取内容
+  // 假设后端返回html内容
   setTimeout(() => {
     // 做边界处理，防止获取不到dom
     if (editor == null) return
     editor.setHtml('<p>this is ajax content</p>')
-  }, 3000)
+  }, 1000)
 })
+
+
 
 onBeforeUnmount(() => {
 
