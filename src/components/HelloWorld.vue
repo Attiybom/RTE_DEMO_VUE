@@ -1,6 +1,5 @@
 <template>
   <div class="hello">
-    <!-- <div id="editor"></div> -->
     <!-- <div style="border: 1px solid #ccc">
       <Toolbar style="border-bottom: 1px solid #ccc" :editor="editorRef" :defaultConfig="toolbarConfig" :mode="mode" />
       <Editor style="height: 500px; overflow-y: hidden;" v-model="valueHtml" :defaultConfig="editorConfig" :mode="mode"
@@ -8,8 +7,8 @@
     </div> -->
 
     <div id="editor—wrapper">
-      <div id="toolbar-container"><!-- 工具栏 --></div>
-      <div id="editor-container"><!-- 编辑器 --></div>
+      <div ref="toolbarRef"><!-- 工具栏 --></div>
+      <div ref="editorRef" class="editor-wrapper" type="text" />
     </div>
 
   </div>
@@ -56,37 +55,78 @@
 <script setup>
 import '@wangeditor/editor/dist/css/style.css'
 import { createEditor, createToolbar } from '@wangeditor/editor'
-import { onMounted } from 'vue'
+import { onMounted, ref, shallowRef, onBeforeUnmount } from 'vue'
 
+// 模式
+const mode = ref('default')
+
+// 编辑器实例，必须用 shallowRef
+const editorRef = shallowRef()
+const toolbarRef = shallowRef()
+
+// dom 方便销毁
+let editor = null
+let toolbar = null
+
+// 内容 HTML
+// createEditor下这种方案并不可行，不能用v-model绑定
+// const valueHtml = ref('初始化完成...')
 
 onMounted(() => {
 
   const editorConfig = {
     placeholder: 'Type here...',
     onChange(editor) {
-      const html = editor.getHtml()
-      console.log('editor content', html)
-      // 也可以同步到 <textarea>
+      console.log('editor.getText()', editor.getText())
     }
   }
 
-  const editor = createEditor({
-    selector: '#editor-container',
+  editor = createEditor({
+    selector: editorRef.value,
     html: '<p><br></p>',
     config: editorConfig,
-    mode: 'default', // or 'simple'
+    mode: mode.value, // or 'simple'
   })
 
   const toolbarConfig = {}
 
   // eslint-disable-next-line no-unused-vars
-  const toolbar = createToolbar({
+  toolbar = createToolbar({
     editor,
-    selector: '#toolbar-container',
+    selector: toolbarRef.value,
     config: toolbarConfig,
-    mode: 'default', // or 'simple'
+    mode: mode.value, // or 'simple'
   })
 
 })
 
+// 模拟 ajax 异步获取内容
+// 假设后端返回html内容
+onMounted(() => {
+  setTimeout(() => {
+    editor.setHtml('<p>this is ajax content</p>')
+  }, 3000)
+})
+
+onBeforeUnmount(() => {
+
+  // 销毁编辑器实例
+  if (editor == null) return
+  editor.destroy()
+  editor = null
+
+  // 销毁工具栏实例
+  if (toolbar == null) return
+  toolbar = null
+})
+
 </script>
+
+
+<style scoped>
+.editor-wrapper {
+  height: 500px;
+  border: none;
+  overflow-y: hidden;
+}
+</style>
